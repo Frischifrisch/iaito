@@ -7,11 +7,7 @@ import subprocess
 
 platforms = ["linux", "macos", "win"]
 
-if sys.platform == "darwin":
-	md5sum_cmd = ["md5", "-r"]
-else:
-	md5sum_cmd = ["md5sum"]
-
+md5sum_cmd = ["md5", "-r"] if sys.platform == "darwin" else ["md5sum"]
 fetch_deps_path = os.path.join(os.path.dirname(sys.argv[0]), "fetch_deps.sh")
 
 print("Fetching latest release")
@@ -36,7 +32,7 @@ for platform in platforms:
 		print(f"Failed to download {platform_url}, skipping.")
 		continue
 
-	md5sum = re.fullmatch("([a-zA-Z0-9]+)( +-)?\n?", md5sum).group(1)
+	md5sum = re.fullmatch("([a-zA-Z0-9]+)( +-)?\n?", md5sum)[1]
 
 	print(f"MD5: {md5sum}")
 	fetch_deps = re.sub(f"^{platform.upper()}_URL=.*$", f"{platform.upper()}_URL={platform_url}".replace("\\", r"\\"), fetch_deps, flags=re.MULTILINE)

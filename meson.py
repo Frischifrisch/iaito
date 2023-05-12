@@ -38,18 +38,24 @@ def win_dist(args):
     subprocess.call(['windeployqt', '--release', os.path.join(args.dist, 'iaito.exe')])
     log.debug('Deploying libr2')
     r2_meson_mod.PATH_FMT.update(r2_meson_mod.R2_PATH)
-    r2_meson_mod.meson('install', options=[['-C', '{}'.format(args.dir)], '--no-rebuild'])
+    r2_meson_mod.meson('install', options=[['-C', f'{args.dir}'], '--no-rebuild'])
 
 def build(args):
     cutter_builddir = os.path.join(ROOT, args.dir)
     if not os.path.exists(cutter_builddir):
-        defines = ['-Denable_python=%s' % str(args.python).lower(),
-                   '-Denable_python_bindings=%s' % str(args.python_bindings).lower()]
+        defines = [
+            f'-Denable_python={str(args.python).lower()}',
+            f'-Denable_python_bindings={str(args.python_bindings).lower()}',
+        ]
         if os.name == 'nt':
-            defines.append('-Dradare2:r2_incdir=radare2/include')
-            defines.append('-Dradare2:r2_libdir=radare2/lib')
-            defines.append('-Dradare2:r2_datdir=radare2/share')
-            defines.append('-Dc_args=-D_UNICODE -DUNICODE')
+            defines.extend(
+                (
+                    '-Dradare2:r2_incdir=radare2/include',
+                    '-Dradare2:r2_libdir=radare2/lib',
+                    '-Dradare2:r2_datdir=radare2/share',
+                    '-Dc_args=-D_UNICODE -DUNICODE',
+                )
+            )
         r2_meson_mod.meson('setup', rootdir=os.path.join(ROOT, 'src'), builddir=args.dir,
                            prefix=os.path.abspath(args.dist), backend=args.backend,
                            release=args.release, shared=False, options=defines)

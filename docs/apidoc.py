@@ -10,7 +10,7 @@ ALLOWED_TYPES = ['class', 'interface', 'struct', 'union']
 
 def write_file(name, text, destdir):
     """Write the output file for module/package <name>."""
-    fname = os.path.join(destdir, '%s.%s' % (name, 'rst'))
+    fname = os.path.join(destdir, f'{name}.rst')
 
     if not os.path.exists(os.path.dirname(fname)):
         try:
@@ -47,10 +47,10 @@ def format_directive(package_type, package, project = None):
 
 def create_package_file(package, package_type, package_id, package_folder, rootpath, destdir):
     """Build the text of the file and write the file."""
-    text = format_heading(1, '%s' % (package))
+    text = format_heading(1, f'{package}')
     text += format_directive(package_type, package)
 
-    xmlfile = os.path.join(rootpath, package_id + '.xml')
+    xmlfile = os.path.join(rootpath, f'{package_id}.xml')
     f = xml.etree.ElementTree.parse(os.path.join(xmlfile))
 
     write_file(os.path.join(package_folder, package_id), text, destdir)
@@ -58,19 +58,18 @@ def create_package_file(package, package_type, package_id, package_folder, rootp
 
 def create_modules_toc_file(key, value, destdir):
     """Create the module's index."""
-    text = format_heading(1, '%s' % value)
+    text = format_heading(1, f'{value}')
     text += '.. toctree::\n'
     text += '   :glob:\n\n'
     text += '   %s/*\n' % key
 
-    write_file('%slist' % key, text, destdir)
+    write_file(f'{key}list', text, destdir)
 
 
 def get_compound_folder(rootpath, compound):
     fxml = xml.etree.ElementTree.parse(os.path.join(rootpath, compound.get('refid')) + '.xml')
     loc = fxml.getroot()[0].find('location')
-    dirname = os.path.basename(os.path.split(loc.get('file'))[0])
-    return dirname
+    return os.path.basename(os.path.split(loc.get('file'))[0])
 
 
 def recurse_tree(rootpath, destdir):
@@ -92,11 +91,7 @@ def get_folders_tree(rootpath):
 
     # Retrieve the subfolders indexes
     for root, _, files in os.walk(rootpath):
-        for xmlfile in files:
-            if not xmlfile.startswith('dir_'):
-                continue
-            tmp.append(xmlfile)
-
+        tmp.extend(xmlfile for xmlfile in files if xmlfile.startswith('dir_'))
     # Iterate on them
     dirs = []
     for xmlfile in tmp:
